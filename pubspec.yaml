@@ -1,0 +1,8 @@
+name: dabl_query
+version: 0.1.0
+author: Nathan Kerr <nathankerr@gmail.com>
+description: The DABL Query generator
+dependencies:
+  unittest: '>=0.10.1+2 <0.11.0'
+  dabl_dart:
+    path: C:\Users\Nathan\dart\dabl-dart
