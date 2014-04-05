@@ -1,4 +1,4 @@
-pdo-dart
+dabl-query
 ========
 
-A port of PHP Data Objects to Dart
+The separate query builder class from DABL
