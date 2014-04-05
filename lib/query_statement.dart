@@ -13,7 +13,7 @@ class QueryStatement {
 
 	String _query_string = '';
 
-	List<String> _params = new List<String>();
+	List<Object> _params = new List<Object>();
 
 	DDO _connection;
 
@@ -45,7 +45,7 @@ class QueryStatement {
 		this._params = params;
 	}
 
-	void addParam(String param) {
+	void addParam(Object param) {
 		_params.add(param);
 	}
 
@@ -98,7 +98,7 @@ class QueryStatement {
 
 	static String embedParams(String string, List params, [DDO conn = null]) {
 		if (null != conn) {
-			params = conn.prepareInput(params);
+			params = conn.prepareInput(params).toList();
 		} else {
 			for (int x = 0; x < params.length; ++x) {
 				var value = params[x];
