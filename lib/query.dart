@@ -1,6 +1,6 @@
 library dabl_query;
 
-import 'package:dart_ddo/ddo.dart';
+import 'package:ddo/ddo.dart';
 import 'dart:async';
 part 'condition.dart';
 part 'query_statement.dart';
