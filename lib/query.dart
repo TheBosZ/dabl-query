@@ -646,7 +646,7 @@ class Query {
 				}
 
 				// append $alias, if it's not empty
-				if (!alias.isEmpty) {
+				if (alias != null && alias.isNotEmpty) {
 					table_string = "${table_string} AS ${alias}";
 				}
 				statement.setString(table_string);
