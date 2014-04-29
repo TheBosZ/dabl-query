@@ -365,4 +365,10 @@ class Condition {
 	String toString() {
 		return getQueryStatement().toString();
 	}
+
+	Condition clone() {
+		Condition c = new Condition();
+		c._conds = _conds;
+		return c;
+	}
 }

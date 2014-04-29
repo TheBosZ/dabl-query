@@ -1,10 +1,13 @@
 library dabl_query;
 
 import 'package:ddo/ddo.dart';
+export 'package:ddo/ddo.dart';
 import 'dart:async';
 part 'condition.dart';
 part 'query_statement.dart';
 part 'query_join.dart';
+
+
 
 class Query {
 	static const String ACTION_COUNT = 'COUNT';
@@ -842,6 +845,18 @@ class Query {
 			c.complete(r.rowCount());
 		});
 		return c.future;
+	}
+
+	Query clone() {
+		Query q = new Query();
+		q._where = _where != null ? _where.clone() : null;
+		q._having = _having != null ? _having.clone() : null;
+		if(_joins != null && _joins.isNotEmpty) {
+			for(QueryJoin qj in _joins) {
+				q.addJoin(qj.clone());
+			}
+		}
+		return q;
 	}
 
 }
