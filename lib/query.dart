@@ -67,10 +67,10 @@ class Query {
 	bool _distinct = false;
 	int _limit;
 	int _offset = 0;
-	Map<String, String> _columns;
-	List _groups;
+	Map<String, String> _columns = new Map<String, String>();
+	List _groups = new List();
 	List<QueryJoin> _joins;
-	List _orders;
+	List _orders = new List();
 	Map _extraTables;
 	Map _updateColumnValues;
 	Condition _where;
@@ -533,18 +533,17 @@ class Query {
 		}
 
 		if (null != this._limit) {
-			throw new UnimplementedError('Limits aren\'t supported yet');
-			/* if (null != conn) {
-        if (class_exists('DBMSSQL') && conn instanceof DBMSSQL) {
-          qry_s = QueryStatement::embedIdentifiers(qry_s, stmnt.getIdentifiers(), conn);
-          stmnt.setIdentifiers(array());
-        }
-        conn.applyLimit(qry_s, this._offset, this._limit);
-      } else { */
-			qry_s.write("\nLIMIT ");
-			qry_s.write(this._offset != null ? "${this._offset} , " : '');
-			qry_s.write(this._limit);
-			// }
+			if (null != conn) {
+				/*if (class_exists('DBMSSQL') && conn instanceof DBMSSQL) {
+	          qry_s = QueryStatement::embedIdentifiers(qry_s, stmnt.getIdentifiers(), conn);
+	          stmnt.setIdentifiers(array());
+	        } */
+				qry_s = new StringBuffer(conn.applyLimit(qry_s.toString(), this._offset, this._limit));
+			} else {
+				qry_s.write("\nLIMIT ");
+				qry_s.write(this._offset != null ? "${this._offset} , " : '');
+				qry_s.write(this._limit);
+			}
 		}
 
 		if (Query.ACTION_COUNT == this._action && this.needsComplexCount()) {
@@ -661,11 +660,11 @@ class Query {
 		if (!this._groups.isEmpty) {
 			return true;
 		}
-		this._columns.forEach((k, String column) {
+		for (String column in _columns.values) {
 			if (column.indexOf('(') != -1) {
 				return true;
 			}
-		});
+		}
 		return false;
 	}
 
@@ -781,7 +780,7 @@ class Query {
 	}
 
 	String toString() {
-		Query q = this;
+		Query q = clone();
 		if (null == q.getTable() || q.getTable().isEmpty) {
 			q.setTable('{UNSPECIFIED-TABLE}');
 		}
@@ -804,7 +803,7 @@ class Query {
 	}
 
 	Future<int> doDelete([DDO conn = null]) {
-		Query q = this;
+		Query q = clone();
 
 		if (q.getTable().isEmpty) {
 			throw new Exception('No table specified.');
@@ -819,7 +818,7 @@ class Query {
 	}
 
 	Future<DDOStatement> doSelect([DDO conn = null]) {
-		Query q = this;
+		Query q = clone();
 
 		if (q.getTable().isEmpty) {
 			throw new Exception('No table specified.');
@@ -851,10 +850,33 @@ class Query {
 		Query q = new Query();
 		q._where = _where != null ? _where.clone() : null;
 		q._having = _having != null ? _having.clone() : null;
-		if(_joins != null && _joins.isNotEmpty) {
-			for(QueryJoin qj in _joins) {
+		if (_joins != null && _joins.isNotEmpty) {
+			for (QueryJoin qj in _joins) {
 				q.addJoin(qj.clone());
 			}
+		}
+		q._action = _action;
+		q._columns.addAll(_columns);
+		q._distinct = _distinct;
+		if(_extraTables != null && _extraTables.isNotEmpty) {
+			q._extraTables = new Map();
+			q._extraTables.addAll(_extraTables);
+		}
+		if(_groups != null && _groups.isNotEmpty) {
+			q._groups = new List();
+			q._groups.addAll(_groups);
+		}
+		q._limit = _limit;
+		q._offset = _offset;
+		if(_orders != null && _orders.isNotEmpty) {
+			q._orders = new List();
+			q._orders.addAll(_orders);
+		}
+		q._table = _table;
+		q._tableAlias = _tableAlias;
+		if(_updateColumnValues != null && _updateColumnValues.isNotEmpty) {
+			q._updateColumnValues = new Map();
+			q._updateColumnValues.addAll(_updateColumnValues);
 		}
 		return q;
 	}

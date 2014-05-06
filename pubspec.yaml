@@ -3,5 +3,6 @@ version: 0.1.0
 author: Nathan Kerr <nathankerr@gmail.com>
 description: The DABL Query generator
 dependencies:
-  ddo: any
+  ddo:
+    path: ../pdodart/
   unittest: '>=0.10.1+2 <0.11.0'
