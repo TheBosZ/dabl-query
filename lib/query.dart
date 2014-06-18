@@ -68,7 +68,7 @@ class Query {
 	int _limit;
 	int _offset = 0;
 	Map<String, String> _columns = new Map<String, String>();
-	List _groups = new List();
+	List<String> _groups = new List();
 	List<QueryJoin> _joins;
 	List _orders = new List();
 	Map _extraTables;
@@ -385,7 +385,7 @@ class Query {
 		return this;
 	}
 
-	Query groupBy(column) {
+	Query groupBy(String column) {
 		this._groups.add(column);
 		return this;
 	}
@@ -444,7 +444,7 @@ class Query {
 	QueryStatement getQuery([DDO conn = null]) {
 
 		// the QueryStatement for the Query
-		var stmnt = new QueryStatement(conn);
+		QueryStatement stmnt = new QueryStatement(conn);
 
 		// the string statement will use
 		StringBuffer qry_s = new StringBuffer();
@@ -460,26 +460,26 @@ class Query {
 			case Query.ACTION_COUNT:
 			case Query.ACTION_SELECT:
 			default:
-				var columns_stmnt = this.getColumnsClause(conn);
+				QueryStatement columns_stmnt = this.getColumnsClause(conn);
 				stmnt.addIdentifiers(columns_stmnt.getIdentifiers());
 				stmnt.addParams(columns_stmnt.getParams());
 				qry_s.write('SELECT ${columns_stmnt.getString()}\nFROM ');
 				break;
 		}
 
-		var table_stmnt = this.getTablesClause(conn);
+		QueryStatement table_stmnt = this.getTablesClause(conn);
 		stmnt.addIdentifiers(table_stmnt.getIdentifiers());
 		stmnt.addParams(table_stmnt.getParams());
 		qry_s.write(table_stmnt.getString());
 
 		if (null != _joins && !this._joins.isEmpty) {
-			var join_stmnt;
+			QueryStatement join_stmnt;
 			for (QueryJoin join in this._joins) {
 				join_stmnt = join.getQueryStatement(conn);
 				qry_s.write("\n\t");
-				qry_s.write(join_stmnt.string);
-				stmnt.addParams(join_stmnt.params);
-				stmnt.addIdentifiers(join_stmnt.identifiers);
+				qry_s.write(join_stmnt.getString());
+				stmnt.addParams(join_stmnt.getParams());
+				stmnt.addIdentifiers(join_stmnt.getIdentifiers());
 			}
 		}
 
@@ -489,12 +489,13 @@ class Query {
 			}
 
 			List column_updates = new List();
+			for(String column_name in _updateColumnValues.keys) {
+				String column_value = _updateColumnValues[column_name];
 
-			this._updateColumnValues.forEach((column_name, column_value) {
 				column_updates.add("${QueryStatement.IDENTIFIER} = ${QueryStatement.PARAM}");
 				stmnt.addIdentifier(column_name);
 				stmnt.addParam(column_value);
-			});
+			}
 			qry_s.write("\nSET ");
 			qry_s.write(column_updates.join(','));
 		}
@@ -509,7 +510,7 @@ class Query {
 		}
 
 		if (null != _groups && !this._groups.isEmpty) {
-			var clause = this.getGroupByClause();
+			QueryStatement clause = this.getGroupByClause();
 			stmnt.addIdentifiers(clause.getIdentifiers());
 			stmnt.addParams(clause.getParams());
 			qry_s.write(clause.getString());
@@ -556,7 +557,7 @@ class Query {
 		return stmnt;
 	}
 
-	QueryStatement getTablesClause(conn) {
+	QueryStatement getTablesClause(DDO conn) {
 
 		var table = this.getTable();
 
@@ -564,10 +565,10 @@ class Query {
 			throw new Exception('No table specified.');
 		}
 
-		var statement = new QueryStatement(conn);
+		QueryStatement statement = new QueryStatement(conn);
 		String alias = this.getAlias();
 
-		var table_statement;
+		QueryStatement table_statement;
 		String table_string;
 
 		// if table is a Query, get its QueryStatement
@@ -669,7 +670,7 @@ class Query {
 	}
 
 	bool needsComplexCount() {
-		return this.hasAggregates() || null != this._having || null != this._distinct;
+		return this.hasAggregates() || (null != this._having && false != this._having) || (null != this._distinct && false != this._distinct);
 	}
 
 	QueryStatement getColumnsClause(DDO conn) {
@@ -695,7 +696,8 @@ class Query {
 
 			if (null == this.getHaving()) {
 				if (!this._groups.isEmpty) {
-					var groups = this._groups;
+					List<String> groups = new List<String>();
+					groups.addAll(this._groups);
 
 					for (var x = 0; x < groups.length; ++x) {
 						statement.addIdentifier(groups[x]);
@@ -766,11 +768,11 @@ class Query {
 		return statement;
 	}
 
-	QueryStatement getGroupByClause([conn = null]) {
-		var statement = new QueryStatement(conn);
+	QueryStatement getGroupByClause([DDO conn = null]) {
+		QueryStatement statement = new QueryStatement(conn);
 		if (!this._groups.isEmpty) {
 			List sgroups = new List();
-			for (var group in this._groups) {
+			for (var group in _groups) {
 				statement.addIdentifier(group);
 				sgroups.add(QueryStatement.IDENTIFIER);
 			}
