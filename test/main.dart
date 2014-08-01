@@ -1,10 +1,12 @@
 library query_test;
 
 import 'package:unittest/unittest.dart';
-import '../lib/query.dart';
+import 'package:dabl_query/query.dart';
 
 main() {
 	Query q = new Query('awesome');
 	q.add('Nathan', '\'Is cool');
-	print(q);
+	test('Creates query', () {
+		expect(q.toString(), equalsIgnoringWhitespace("SELECT awesome.* FROM awesome WHERE Nathan = ''Is cool'"));
+	});
 }

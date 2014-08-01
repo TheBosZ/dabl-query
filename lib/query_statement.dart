@@ -80,7 +80,7 @@ class QueryStatement {
 	static String embedIdentifiers(String string, List identifiers, [DDO conn = null]) {
 
 		if (null != conn) {
-			identifiers = conn.quoteIdentifier(identifiers).toList();
+			identifiers = (conn.quoteIdentifier(identifiers) as List);
 		}
 
 		for (var x = 0; x < identifiers.length; ++x) {
@@ -98,7 +98,7 @@ class QueryStatement {
 
 	static String embedParams(String string, List params, [DDO conn = null]) {
 		if (null != conn) {
-			params = conn.prepareInput(params).toList();
+			params = (conn.prepareInput(params) as List);
 		} else {
 			for (int x = 0; x < params.length; ++x) {
 				var value = params[x];
