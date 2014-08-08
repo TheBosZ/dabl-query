@@ -7,8 +7,6 @@ part 'condition.dart';
 part 'query_statement.dart';
 part 'query_join.dart';
 
-
-
 class Query {
 	static const String ACTION_COUNT = 'COUNT';
 	static const String ACTION_DELETE = 'DELETE';
@@ -76,6 +74,7 @@ class Query {
 	Condition _where;
 	Condition _having;
 
+	bool prettyPrint = true;
 
 	Query([table = null, alias = null]) {
 		_where = new Condition();
@@ -452,10 +451,10 @@ class Query {
 		switch (this._action) {
 
 			case Query.ACTION_DELETE:
-				qry_s.write("DELETE\nFROM ");
+				qry_s.write("DELETE${prettyPrint ? '\n' : ' '}FROM ");
 				break;
 			case Query.ACTION_UPDATE:
-				qry_s.write("UPDATE\n");
+				qry_s.write("UPDATE${prettyPrint ? '\n' : ' '}");
 				break;
 			case Query.ACTION_COUNT:
 			case Query.ACTION_SELECT:
@@ -463,7 +462,7 @@ class Query {
 				QueryStatement columns_stmnt = this.getColumnsClause(conn);
 				stmnt.addIdentifiers(columns_stmnt.getIdentifiers());
 				stmnt.addParams(columns_stmnt.getParams());
-				qry_s.write('SELECT ${columns_stmnt.getString()}\nFROM ');
+				qry_s.write('SELECT ${columns_stmnt.getString()}${prettyPrint ? '\n' : ' '}FROM ');
 				break;
 		}
 
@@ -476,7 +475,11 @@ class Query {
 			QueryStatement join_stmnt;
 			for (QueryJoin join in this._joins) {
 				join_stmnt = join.getQueryStatement(conn);
-				qry_s.write("\n\t");
+				if(prettyPrint) {
+					qry_s.write("\n\t");
+				} else {
+					qry_s.write(' ');
+				}
 				qry_s.write(join_stmnt.getString());
 				stmnt.addParams(join_stmnt.getParams());
 				stmnt.addIdentifiers(join_stmnt.getIdentifiers());
@@ -496,14 +499,14 @@ class Query {
 				stmnt.addIdentifier(column_name);
 				stmnt.addParam(column_value);
 			}
-			qry_s.write("\nSET ");
+			qry_s.write("${prettyPrint ? '\n' : ' '}SET ");
 			qry_s.write(column_updates.join(','));
 		}
 
 		QueryStatement where_stmnt = this.getWhereClause();
 
 		if (null != where_stmnt && !where_stmnt.getString().trim().isEmpty) {
-			qry_s.write("\nWHERE ");
+			qry_s.write("${prettyPrint ? '\n' : ' '}WHERE");
 			qry_s.write(where_stmnt.getString());
 			stmnt.addParams(where_stmnt.getParams());
 			stmnt.addIdentifiers(where_stmnt.getIdentifiers());
@@ -519,7 +522,7 @@ class Query {
 		if (null != this.getHaving()) {
 			var having_stmnt = this.getHaving().getQueryStatement();
 			if (null != having_stmnt) {
-				qry_s.write("\nHAVING ");
+				qry_s.write("${prettyPrint ? '\n' : ' '}HAVING ");
 				qry_s.write(having_stmnt);
 				stmnt.addParams(having_stmnt.getParams());
 				stmnt.addIdentifiers(having_stmnt.getIdentifiers());
@@ -541,7 +544,7 @@ class Query {
 	        } */
 				qry_s = new StringBuffer(conn.applyLimit(qry_s.toString(), this._offset, this._limit));
 			} else {
-				qry_s.write("\nLIMIT ");
+				qry_s.write("${prettyPrint ? '\n' : ' '}LIMIT ");
 				qry_s.write(this._offset != null ? "${this._offset} , " : '');
 				qry_s.write(this._limit);
 			}
@@ -550,7 +553,7 @@ class Query {
 		if (Query.ACTION_COUNT == this._action && this.needsComplexCount()) {
 			var query = qry_s.toString();
 			qry_s = new StringBuffer();
-			qry_s.write("SELECT count(0)\nFROM (${query}) a");
+			qry_s.write("SELECT count(0)${prettyPrint ? '\n' : ' '}FROM (${query}) a");
 		}
 
 		stmnt.setString(qry_s.toString());
@@ -750,7 +753,9 @@ class Query {
 	}
 
 	QueryStatement getWhereClause() {
-		return this.getWhere().getQueryStatement();
+		Condition where = this.getWhere();
+		where.prettyPrint = prettyPrint;
+		return where.getQueryStatement();
 	}
 
 	QueryStatement getOrderByClause([conn = null]) {
@@ -850,6 +855,7 @@ class Query {
 
 	Query clone() {
 		Query q = new Query();
+		q.prettyPrint = prettyPrint;
 		q._where = _where != null ? _where.clone() : null;
 		q._having = _having != null ? _having.clone() : null;
 		if (_joins != null && _joins.isNotEmpty) {

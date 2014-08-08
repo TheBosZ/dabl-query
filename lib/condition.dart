@@ -26,7 +26,9 @@ class Condition {
 
 	List<List> _conds;
 
-	Condition([left = null, right = null, oper = Query.EQUAL, quote = null]) {
+	bool prettyPrint = true;
+
+	Condition([left = null, right = null, String oper = Query.EQUAL, quote = null]) {
 		_conds = new List<List<String>>();
 		if (null != left) {
 			this.add(left, right, oper, quote);
@@ -346,7 +348,12 @@ class Condition {
 			if (null == temp) {
 				continue;
 			}
-			sb.write("\n\t");
+			if(prettyPrint) {
+				sb.write("\n\t");
+			} else {
+				sb.write(' ');
+			}
+
 			if (is_first) {
 				is_first = false;
 				is_second = true;

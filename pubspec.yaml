@@ -1,7 +1,8 @@
 name: dabl_query
 version: 0.1.0
 author: Nathan Kerr <nathankerr@gmail.com>
-description: The DABL Query generator
+description: The DABL Query generator. Object-oriented query creator.
+homepage: https://github.com/TheBosZ/dabl-query
 dependencies:
-  ddo: any
+  ddo: '>=0.2.3 <0.3.0'
   unittest: '>=0.10.1+2 <0.11.0'
