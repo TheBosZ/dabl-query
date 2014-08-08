@@ -1,7 +1,7 @@
 library query_test;
 
 import 'package:unittest/unittest.dart';
-import '../lib/query.dart';
+import 'package:dabl_query/query.dart';
 
 main() {
 	Query q = new Query('awesome');
