@@ -802,11 +802,9 @@ class Query {
 		}
 
 		q.setAction(Query.ACTION_COUNT);
-		Completer c = new Completer();
-		q.getQuery(conn).bindAndExecute().then((DDOStatement t) {
-			c.complete(t.fetchColumn());
+		return q.getQuery(conn).bindAndExecute().then((DDOStatement t) {
+			return t.fetchColumn();
 		});
-		return c.future;
 	}
 
 	Future<int> doDelete([DDO conn = null]) {
@@ -817,11 +815,10 @@ class Query {
 		}
 
 		q.setAction(Query.ACTION_DELETE);
-		Completer c = new Completer();
-		q.getQuery(conn).bindAndExecute().then((DDOStatement d) {
-			c.complete(d.rowCount());
+		return q.getQuery(conn).bindAndExecute().then((DDOStatement d) {
+			return d.rowCount();
 		});
-		return c.future;
+
 	}
 
 	Future<DDOStatement> doSelect([DDO conn = null]) {
@@ -846,11 +843,9 @@ class Query {
 
 		q.setAction(Query.ACTION_UPDATE);
 
-		Completer c = new Completer();
-		q.getQuery(conn).bindAndExecute().then((DDOStatement r) {
-			c.complete(r.rowCount());
+		return q.getQuery(conn).bindAndExecute().then((DDOStatement r) {
+			return r.rowCount();
 		});
-		return c.future;
 	}
 
 	Query clone() {

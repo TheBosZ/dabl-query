@@ -146,10 +146,8 @@ class QueryStatement {
 			}
 			result.bindValue(x + 1, value, typ);
 		}
-		Completer c = new Completer();
-		result.execute().then((_) {
-			c.complete(result);
+		return result.execute().then((_) {
+			return result;
 		});
-		return c.future;
 	}
 }
